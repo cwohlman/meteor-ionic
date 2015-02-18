@@ -13,12 +13,15 @@ IonLoading = {
       $('.backdrop').addClass('backdrop-loading');
     }
 
-    Meteor.setTimeout(function () {
+    this.timeout = Meteor.setTimeout(function () {
+      this.timeout = null;
+      
       this.template = Template['ionLoading'];
       this.view = Blaze.renderWithData(this.template, {template: options.customTemplate}, $('.ionic-body').get(0));
-
+      
       var $loadingEl = $(this.view.firstNode());
       $loadingEl.addClass('visible');
+      this.visible = true;
 
       Meteor.setTimeout(function () {
         $loadingEl.addClass('active');
@@ -33,13 +36,18 @@ IonLoading = {
   },
 
   hide: function () {
-    var $loadingEl = $(this.view.firstNode());
-    $loadingEl.removeClass('active');
-
-    Meteor.setTimeout(function () {
-      IonBackdrop.release();
-      $loadingEl.removeClass('visible');
-      Blaze.remove(this.view);
-    }.bind(this), 400);
+    if (this.visible) {
+      var $loadingEl = $(this.view.firstNode());
+      $loadingEl.removeClass('active');
+  
+      Meteor.setTimeout(function () {
+        IonBackdrop.release();
+        $loadingEl.removeClass('visible');
+        Blaze.remove(this.view);
+        this.visible = false;
+      }.bind(this), 400);
+    } else if (this.timeout) {
+      Meteor.clearTimeout(this.timeout);
+    }
   }
 };
